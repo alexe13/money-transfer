@@ -87,8 +87,10 @@ public class SparkEndpoints {
         return writeValueAsString(accountService.deposit(id, amount));
     }
 
-    private Account withdraw(Request request, Response response) {
-        return null;
+    private String withdraw(Request request, Response response) {
+        Long id = Long.valueOf(Optional.ofNullable(readField(request.body(), "id")).orElseThrow(IllegalArgumentException::new));
+        BigDecimal amount = new BigDecimal(Optional.ofNullable(readField(request.body(), "amount")).orElseThrow(IllegalArgumentException::new));
+        return writeValueAsString(accountService.withdraw(id, amount));
     }
 
     private Account transfer(Request request, Response response) {

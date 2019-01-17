@@ -1,18 +1,18 @@
 package ga.fundamental.revolut.exception;
 
-public class AccountNotFoundException extends RuntimeException {
+public class InsufficientFundsException extends RuntimeException {
 
-    public AccountNotFoundException() {
+    public InsufficientFundsException() {
         super();
     }
 
-    public AccountNotFoundException(String message) {
+    public InsufficientFundsException(String message) {
         super(message);
     }
 
     @Override
     public String getMessage() {
-        return "Account not found in database";
+        return "Not enough funds to perform operation";
     }
 
     @Override

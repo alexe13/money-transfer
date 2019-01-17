@@ -1,6 +1,7 @@
 package ga.fundamental.revolut.service.impl;
 
 import ga.fundamental.revolut.exception.AccountNotFoundException;
+import ga.fundamental.revolut.exception.InsufficientFundsException;
 import ga.fundamental.revolut.model.Account;
 import ga.fundamental.revolut.persistence.AccountDao;
 import ga.fundamental.revolut.service.AccountService;
@@ -48,19 +49,20 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account deposit(@NonNull Long id, @NonNull BigDecimal amount) {
-        Account accountToDeposit = accountDao.findById(id);
-
-        if (accountToDeposit == null) {
-            throw new AccountNotFoundException();
-        }
-
-        if (amount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Negative amount");
-        }
-
         Lock lock = LockUtils.acquireLock(id, Account.class);
         lock.lock();
+        Account accountToDeposit;
         try {
+            accountToDeposit = accountDao.findById(id);
+
+            if (accountToDeposit == null) {
+                throw new AccountNotFoundException();
+            }
+
+            if (amount.compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("Negative amount");
+            }
+
             accountToDeposit.setBalance(accountToDeposit.getBalance().add(amount));
             accountDao.update(accountToDeposit);
         } finally {
@@ -72,7 +74,27 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account withdraw(@NonNull Long id, @NonNull BigDecimal amount) {
-        return null;
+        Lock lock = LockUtils.acquireLock(id, Account.class);
+        lock.lock();
+        Account accountToWithdraw;
+        try {
+            accountToWithdraw = accountDao.findById(id);
+
+            if (accountToWithdraw == null) {
+                throw new AccountNotFoundException();
+            }
+
+            if (accountToWithdraw.getBalance().compareTo(amount) < 0) {
+                throw new InsufficientFundsException("Current balance of " + accountToWithdraw.getBalance() + " is less then withdraw amount");
+            }
+
+            accountToWithdraw.setBalance(accountToWithdraw.getBalance().subtract(amount));
+            accountDao.update(accountToWithdraw);
+        } finally {
+            lock.unlock();
+        }
+
+        return accountToWithdraw;
     }
 
     @Override

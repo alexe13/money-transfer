@@ -62,31 +62,8 @@ public class AccountDaoImpl implements AccountDao {
 
     @Override
     @Transactional
-    public Account findById(Long id) {
+    public Account findById(@NonNull Long id) {
         return entityManagerProvider.get().find(Account.class, id);
     }
 
-//    private void wrapInTransaction(Runnable action) {
-//        try {
-//            entityManager.getTransaction().begin();
-//            action.run();
-//            entityManager.getTransaction().commit();
-//        } catch (Exception ex) {
-//            log.error("Transaction failed", ex);
-//            entityManager.getTransaction().rollback();
-//        }
-//    }
-//
-//    private Account wrapInTransaction(Callable<Account> action) {
-//        try {
-//            entityManager.getTransaction().begin();
-//            Account accountFromDb = action.call();
-//            entityManager.getTransaction().commit();
-//            return accountFromDb;
-//        } catch (Exception ex) {
-//            log.error("Transaction failed", ex);
-//            entityManager.getTransaction().rollback();
-//            return null;
-//        }
-//    }
 }

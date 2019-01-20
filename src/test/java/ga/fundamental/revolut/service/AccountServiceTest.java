@@ -26,6 +26,7 @@ public class AccountServiceTest {
         //test that no double-deposits are possible in multithreaded environment
         CountDownLatch latch = new CountDownLatch(10);
         IntStream.range(0, 10)
+                .parallel()
                 .forEach(i -> new Thread(() -> {
                     accountService.deposit(id, BigDecimal.valueOf(100));
                     latch.countDown();
@@ -41,6 +42,7 @@ public class AccountServiceTest {
         //test that account balance can not be set to negative value in a multithreaded environment
         CountDownLatch latch = new CountDownLatch(10);
         IntStream.range(0, 10)
+                .parallel()
                 .forEach(i -> new Thread(() -> {
                     try {
                         accountService.withdraw(id, BigDecimal.valueOf(100));
@@ -55,7 +57,7 @@ public class AccountServiceTest {
 
     @Test
     public void testConcurrentTransfer() throws InterruptedException {
-        //test that no deadlocks are happening during different-order transfers
+        //test that no deadlocks are happening during counter-order transfers
         Long idFrom = accountService.create(BigDecimal.valueOf(500)).getId();
         Long idTo = accountService.create(BigDecimal.valueOf(500)).getId();
         ExecutorService es = Executors.newFixedThreadPool(10);
@@ -63,6 +65,7 @@ public class AccountServiceTest {
         Callable<Account> twoToOne = () -> accountService.transfer(idTo, idFrom, BigDecimal.valueOf(100));
 
         IntStream.range(0, 10)
+                .parallel()
                 .mapToObj(i -> i % 2 == 0 ? oneToTwo : twoToOne)
                 .map(es::submit)
                 .forEach(f -> {

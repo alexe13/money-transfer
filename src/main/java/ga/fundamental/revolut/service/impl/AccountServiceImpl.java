@@ -2,6 +2,7 @@ package ga.fundamental.revolut.service.impl;
 
 import ga.fundamental.revolut.exception.AccountNotFoundException;
 import ga.fundamental.revolut.exception.InsufficientFundsException;
+import ga.fundamental.revolut.exception.MalformedRequestException;
 import ga.fundamental.revolut.model.Account;
 import ga.fundamental.revolut.persistence.AccountDao;
 import ga.fundamental.revolut.service.AccountService;
@@ -56,7 +57,7 @@ public class AccountServiceImpl implements AccountService {
             accountToDeposit = Optional.ofNullable(accountDao.findById(id)).orElseThrow(AccountNotFoundException::new);
 
             if (amount.compareTo(BigDecimal.ZERO) < 0) {
-                throw new IllegalArgumentException("Negative amount");
+                throw new MalformedRequestException("Negative amount");
             }
 
             accountToDeposit.setBalance(accountToDeposit.getBalance().add(amount));
@@ -75,6 +76,10 @@ public class AccountServiceImpl implements AccountService {
         Account accountToWithdraw;
         try {
             accountToWithdraw = Optional.ofNullable(accountDao.findById(id)).orElseThrow(AccountNotFoundException::new);
+
+            if (amount.compareTo(BigDecimal.ZERO) < 0) {
+                throw new MalformedRequestException("Negative amount");
+            }
 
             if (accountToWithdraw.getBalance().compareTo(amount) < 0) {
                 throw new InsufficientFundsException("Current balance of " + accountToWithdraw.getBalance() + " is less then withdraw amount");
@@ -104,6 +109,10 @@ public class AccountServiceImpl implements AccountService {
         try {
             accountToWithdraw = Optional.ofNullable(accountDao.findById(fromId)).orElseThrow(AccountNotFoundException::new);
             accountToDeposit = Optional.ofNullable(accountDao.findById(toId)).orElseThrow(AccountNotFoundException::new);
+
+            if (amount.compareTo(BigDecimal.ZERO) < 0) {
+                throw new MalformedRequestException("Negative amount");
+            }
 
             if (accountToWithdraw.getBalance().compareTo(amount) < 0) {
                 throw new InsufficientFundsException("Current balance of " + accountToWithdraw.getBalance() + " is less then withdraw amount");
